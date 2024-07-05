@@ -1,3 +1,5 @@
+package com.dnsserver;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -5,6 +7,11 @@ import java.nio.charset.StandardCharsets;
 
 public class Main {
   public static void main(String[] args){
+
+    System.out.println("Starting DNS server");
+
+    Header header = new Header();
+
     try(DatagramSocket serverSocket = new DatagramSocket(2053)) {
       while(true) {
         final byte[] buf = new byte[512];
@@ -12,9 +19,9 @@ public class Main {
         serverSocket.receive(packet);
 
         System.out.println(String.format("Received: %s", new String(buf, StandardCharsets.UTF_8)));
-    
-        final byte[] bufResponse = new byte[512];
-        final DatagramPacket packetResponse = new DatagramPacket(bufResponse, bufResponse.length, packet.getSocketAddress());
+
+        var headerBytes = header.Bytes();
+        final DatagramPacket packetResponse = new DatagramPacket(headerBytes, headerBytes.length, packet.getSocketAddress());
         serverSocket.send(packetResponse);
       }
     } catch (IOException e) {
