@@ -1,5 +1,6 @@
 package com.dnsserver;
 
+import com.dnsserver.DnsResponse.Header;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -28,9 +29,10 @@ public class DnsServer implements AutoCloseable {
             String.format("Received: %s", new String(buf, StandardCharsets.UTF_8)));
 
         var buffer = ByteBuffer.allocate(512);
+        var requestHeader = new DnsResponse().new Header().Parse(buf);
 
         byte[] responseBytes = new DnsResponse()
-            .Write(buffer)
+            .Write(requestHeader, buffer)
             .array();
 
         final DatagramPacket packetResponse = new DatagramPacket(responseBytes,

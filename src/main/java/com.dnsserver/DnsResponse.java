@@ -2,35 +2,69 @@ package com.dnsserver;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class DnsResponse {
 
-  public ByteBuffer Write(ByteBuffer buffer) {
+  public ByteBuffer Write(Header header, ByteBuffer buffer) {
     String domain = "codecrafters.io";
-    new Header().Bytes(buffer);
+    header.Write(buffer);
     Question.Write(buffer, domain);
     Answer.Write(buffer, domain);
 
     return buffer;
   }
 
-  class Header {
+  public class Header {
 
-    private short id = 1234;
-    private short flags = (short)0b10000000_00000000;
-    private short qdCount = 1;
-    private short anCount = 1;
-    private short nsCount;
-    private short arCount;
+    private short id;
+    private short flags;
+    private short qdcount = 1;
+    private short ancount = 1;
+    private short nscount;
+    private short arcount;
+    private int qr;
+    private int opcode;
+    private int rd;
 
-    public ByteBuffer Bytes(ByteBuffer buffer) {
+
+    public ByteBuffer Write(ByteBuffer buffer) {
       buffer.putShort(id);
-      buffer.putShort(flags);
-      buffer.putShort(qdCount);
-      buffer.putShort(anCount);
-      buffer.putShort(nsCount);
-      buffer.putShort(arCount);
+      buffer.putShort(responseFlags(this));
+      buffer.putShort(qdcount);
+      buffer.putShort(ancount);
+      buffer.putShort(nscount);
+      buffer.putShort(arcount);
       return buffer;
+    }
+
+    public Header Parse(byte[] data) {
+      ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN);
+
+      id = buffer.getShort();
+
+      flags = buffer.getShort();
+      qdcount = buffer.getShort();
+      ancount = buffer.getShort();
+      nscount = buffer.getShort();
+      arcount = buffer.getShort();
+
+      qr = (flags >> 15) & 0b0001;
+      opcode = (flags >> 11) & 0b1111;
+      rd = (flags >> 8) & 0b0001;
+      ancount = 1;
+
+      return this;
+    }
+
+    private short responseFlags(Header dnsHeader) {
+      short initialValue = (short)0b1000_0000_0000_0000; // qr = 1 => Response
+      short response = (short)(initialValue | (dnsHeader.opcode << 11) |
+          (dnsHeader.rd << 8));
+      if (dnsHeader.opcode != 0) {
+        response |= 4;
+      }
+      return response;
     }
   }
 
