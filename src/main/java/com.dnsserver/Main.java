@@ -3,6 +3,7 @@ package com.dnsserver;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class Main {
@@ -20,8 +21,13 @@ public class Main {
 
         System.out.println(String.format("Received: %s", new String(buf, StandardCharsets.UTF_8)));
 
-        var headerBytes = header.Bytes();
-        final DatagramPacket packetResponse = new DatagramPacket(headerBytes, headerBytes.length, packet.getSocketAddress());
+        var buffer = ByteBuffer.allocate(512);
+        new Header().Bytes(buffer);
+        Question.WriteQuestion(buffer, "codecrafters.io");
+
+        byte[] responseBytes = buffer.array();
+
+        final DatagramPacket packetResponse = new DatagramPacket(responseBytes, responseBytes.length, packet.getSocketAddress());
         serverSocket.send(packetResponse);
       }
     } catch (IOException e) {
