@@ -2,14 +2,13 @@ package com.dnsserver.message;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 
 public class QuestionTest {
 
   @Test
-  void encode() {
+  void Encode() {
     var question = new Question("codecrafters.io", (short) 1, (short) 1);
     var questionBuffer = ByteBuffer.allocate(21);
     question.Encode(questionBuffer);
@@ -28,7 +27,7 @@ public class QuestionTest {
   }
 
   @Test
-  void parse() {
+  void Parse() {
 
     var qBytes = new byte[]{
         12, //Length
@@ -44,5 +43,37 @@ public class QuestionTest {
     assertEquals("codecrafters.io", question.domain());
     assertEquals(1, question.QType());
     assertEquals(1, question.QClass());
+  }
+
+  @Test
+  void ParseCompressed() {
+
+    var qBytes = new byte[]{
+        12, // First question
+        99, 111, 100, 101, 99, 114, 97, 102, 116, 101, 114, 115, // Name
+        2,
+        105, 111,
+        0,
+        0, 1,
+        0, 1,
+        (byte) 3,// Compressed question
+        119, 119,119,  //www
+        (byte) 0b1100_0000,
+        (byte) 0b0000_0000,
+        0,
+        0, 1,
+        0, 1,
+    };
+
+    var buffer = ByteBuffer.wrap(qBytes);
+
+      var question = Question.Parse(buffer);
+      var compressedQuestion = Question.Parse(buffer);
+
+      assertEquals("codecrafters.io", question.domain());
+      assertEquals(1, question.QType());
+      assertEquals(1, question.QClass());
+
+      assertEquals("www.codecrafters.io", compressedQuestion.domain());
   }
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 public class HeaderTest {
 
   @Test
-  void parse() {
+  void Parse() {
 
     var buff = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
     buff.putShort((short)1234);
@@ -38,7 +38,7 @@ public class HeaderTest {
   }
 
   @Test
-  void parseOpCode() {
+  void ParseOpCode() {
     var buff = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
     buff.putShort((short)1234);
     buff.put((byte) 0b10111001); // OpCode 7
@@ -56,7 +56,7 @@ public class HeaderTest {
   }
 
   @Test
-  void encode() {
+  void Encode() {
     var header = new Header(
         (short) 1234,
         true,

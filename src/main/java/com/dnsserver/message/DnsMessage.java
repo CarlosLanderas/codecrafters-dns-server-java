@@ -11,7 +11,7 @@ public record DnsMessage(Header header, List<Question> questions) {
     var buff = ByteBuffer.wrap(data);
     Header header = Header.Parse(buff);
     List<Question> questions = new ArrayList<>();
-
+    
     for (int i = 0; i < header.questionCount(); i++) {
       questions.add(Question.Parse(buff));
     }

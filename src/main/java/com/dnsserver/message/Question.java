@@ -13,7 +13,6 @@ public record Question(String domain, short QType, short QClass) {
   }
 
   public static Question Parse(ByteBuffer buffer) {
-
     var encodedName = DecodeDomainName(buffer);
     return new Question(
         encodedName,
@@ -36,21 +35,28 @@ public record Question(String domain, short QType, short QClass) {
   }
 
   private static String DecodeDomainName(ByteBuffer buffer) {
-    var joiner = new StringJoiner(".");
-    while(buffer.hasRemaining()) {
-      var length = buffer.get();
-      if (length == 0) {
-        break;
+
+    // Compressed message format (two octet)
+    // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    // | 1  1|                OFFSET                   |
+    // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+    var labels = new StringJoiner(".");
+    byte b;
+    while ((b = buffer.get()) != 0) {
+      if ((b & 0b1100_0000) == 0b1100_0000){
+        int pointer = (0b0011_1111 & b) << 8 | buffer.get();
+        int currentPosition = buffer.position();
+        buffer.position(pointer);
+        labels.add(DecodeDomainName(buffer));
+        buffer.position(currentPosition);
+      } else {
+        byte[] dst = new byte[b];
+        buffer.get(dst);
+        labels.add(new String(dst));
       }
-      var label = new byte[length];
-      buffer.get(label);
-      joiner.add(new String(label));
     }
 
-    return joiner.toString();
-  }
-
-  private int Length() {
-    return EncodeDomainName().length + 4;
+    return labels.toString();
   }
 }
