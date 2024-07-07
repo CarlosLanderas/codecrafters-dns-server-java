@@ -32,7 +32,7 @@ public record Header(
     short additionalRecordCount
 ) {
 
-  public static Header Parse(ByteBuffer buffer) {
+  public static Header parse(ByteBuffer buffer) {
     final var packetIdentifier = buffer.getShort();
     final var flags = buffer.get();
     final var queryResponseIndicator = (flags & 0b10000000) != 0;
@@ -70,7 +70,7 @@ public record Header(
   }
 
 
-  public void Encode(ByteBuffer buffer) {
+  public void encode(ByteBuffer buffer) {
     // Assuming these fields are class members or parameters passed to the constructor
     buffer.putShort(packetIdentifier);
 

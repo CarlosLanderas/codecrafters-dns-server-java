@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 
 public interface RequestExecutor {
-  void Send(byte[] data, SocketAddress address) throws IOException;
+  void send(byte[] data, SocketAddress address) throws IOException;
 }
 
 

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 public class AnswerTest {
 
   @Test
-  void Parse() {
+  void parse() {
     var domain = "www.google.com";
     var buf = ByteBuffer.allocate(512);
 
@@ -20,9 +20,9 @@ public class AnswerTest {
         60,
         (short) 4,
         new byte[]{8, 8, 8, 8}
-    ).Encode(buf);
+    ).encode(buf);
 
-    var answer = Answer.Parse(ByteBuffer.wrap(buf.array()));
+    var answer = Answer.parse(ByteBuffer.wrap(buf.array()));
 
     assertEquals(domain, answer.domain());
     assertEquals(1, answer.QType());

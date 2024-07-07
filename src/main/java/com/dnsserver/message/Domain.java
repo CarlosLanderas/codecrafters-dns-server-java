@@ -5,7 +5,11 @@ import java.nio.ByteBuffer;
 import java.util.StringJoiner;
 
 public class Domain {
-  public static byte[] EncodeDomainName(String domain) {
+
+  private Domain() {
+  }
+
+  public static byte[] encodeDomainName(String domain) {
     var out = new ByteArrayOutputStream();
 
     for (String label : domain.split("\\.")) {
@@ -18,7 +22,7 @@ public class Domain {
     return out.toByteArray();
   }
 
-  public static String DecodeDomainName(ByteBuffer buffer) {
+  public static String decodeDomainName(ByteBuffer buffer) {
 
     // Compressed message format (two octet)
     // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -32,10 +36,10 @@ public class Domain {
     while ((b = buffer.get()) != 0) {
       if ((b & 0b1100_0000) == 0b1100_0000) {
         compressed = true;
-        int pointer = (0b0011_1111 & b) << 8 | buffer.get();
+        int pointer = (0b0011_1111 & b) << 8 | (buffer.get() & 0xFF);
         int currentPosition = buffer.position();
         buffer.position(pointer);
-        labels.add(DecodeDomainName(buffer));
+        labels.add(decodeDomainName(buffer));
         buffer.position(currentPosition);
       } else {
         byte[] dst = new byte[b];

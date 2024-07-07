@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 
-public class ForwarderExecutorTest {
+class ForwarderExecutorTest {
 
   @Test
   void ExecuteTest() throws Exception {
@@ -35,10 +35,10 @@ public class ForwarderExecutorTest {
     var question = new Question("codecrafters.io", (short) 1, (short) 1);
     var question2 = new Question("stackoverflow.com", (short) 1, (short) 1);
 
-    header.Encode(buf);
-    question.Encode(buf);
-    question2.Encode(buf);
+    header.encode(buf);
+    question.encode(buf);
+    question2.encode(buf);
 
-    executor.Send(buf.array(), socket.getLocalSocketAddress());
+    executor.send(buf.array(), socket.getLocalSocketAddress());
   }
 }

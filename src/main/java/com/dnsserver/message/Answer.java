@@ -2,6 +2,7 @@ package com.dnsserver.message;
 
 import java.nio.ByteBuffer;
 
+@SuppressWarnings("java:S6218")
 public record Answer(
     String domain,
     short QType,
@@ -10,8 +11,8 @@ public record Answer(
     short RDLength,
     byte[] RData) {
 
-  public void Encode(ByteBuffer buffer) {
-    buffer.put(Domain.EncodeDomainName(domain));
+  public void encode(ByteBuffer buffer) {
+    buffer.put(Domain.encodeDomainName(domain));
     buffer.putShort(QType);
     buffer.putShort(QClass);
     buffer.putInt(TTL);
@@ -19,8 +20,8 @@ public record Answer(
     buffer.put(RData);
   }
 
-  public static Answer Parse(ByteBuffer buffer) {
-    var domain = Domain.DecodeDomainName(buffer);
+  public static Answer parse(ByteBuffer buffer) {
+    var domain = Domain.decodeDomainName(buffer);
 
     var qType = buffer.getShort();
     var qClass = buffer.getShort();

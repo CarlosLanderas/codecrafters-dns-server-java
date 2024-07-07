@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 public class QuestionTest {
 
   @Test
-  void Encode() {
+  void encode() {
     var question = new Question("codecrafters.io", (short) 1, (short) 1);
     var questionBuffer = ByteBuffer.allocate(21);
-    question.Encode(questionBuffer);
+    question.encode(questionBuffer);
 
     var qBytes = new byte[]{
         12, //Length
@@ -27,7 +27,7 @@ public class QuestionTest {
   }
 
   @Test
-  void Parse() {
+  void parse() {
 
     var qBytes = new byte[]{
         12, //Length
@@ -38,7 +38,7 @@ public class QuestionTest {
         0, 1, // QType
         0, 1}; // QClass
 
-    var question = Question.Parse(ByteBuffer.wrap(qBytes));
+    var question = Question.parse(ByteBuffer.wrap(qBytes));
 
     assertEquals("codecrafters.io", question.domain());
     assertEquals(1, question.QType());
@@ -46,7 +46,7 @@ public class QuestionTest {
   }
 
   @Test
-  void ParseCompressed() {
+  void parseCompressed() {
 
     var qBytes = new byte[]{
         12, // First question
@@ -67,8 +67,8 @@ public class QuestionTest {
 
     var buffer = ByteBuffer.wrap(qBytes);
 
-      var question = Question.Parse(buffer);
-      var compressedQuestion = Question.Parse(buffer);
+      var question = Question.parse(buffer);
+      var compressedQuestion = Question.parse(buffer);
 
       assertEquals("codecrafters.io", question.domain());
       assertEquals(1, question.QType());

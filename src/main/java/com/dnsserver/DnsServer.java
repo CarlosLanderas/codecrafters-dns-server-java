@@ -6,10 +6,12 @@ import com.dnsserver.executor.RequestExecutor;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DnsServer implements AutoCloseable {
+
+  private final Logger logger = Logger.getLogger(DnsServer.class.getName());
 
   private int port = 0;
   private String forwarderAddress = null;
@@ -20,10 +22,10 @@ public class DnsServer implements AutoCloseable {
     this.forwarderAddress = forwarderAddress;
   }
 
-  public void Start() throws IOException {
+  public void start() throws IOException {
     serverSocket = new DatagramSocket(port);
 
-    RequestExecutor executor = GetExecutor(serverSocket, forwarderAddress);
+    RequestExecutor executor = getExecutor(serverSocket, forwarderAddress);
 
     while (!serverSocket.isClosed()) {
       try {
@@ -32,20 +34,18 @@ public class DnsServer implements AutoCloseable {
 
         serverSocket.receive(packet);
 
-        executor.Send(buf, packet.getSocketAddress());
+        executor.send(buf, packet.getSocketAddress());
 
       } catch (IOException e) {
-        System.out.println("IOException: " + e.getMessage());
+        logger.log(Level.SEVERE, "Failed to process request: {0}", e.getMessage());
       }
     }
   }
 
-  private RequestExecutor GetExecutor(DatagramSocket socket, String forwarder)
-      throws SocketException, UnknownHostException {
+  private RequestExecutor getExecutor(DatagramSocket socket, String forwarder) {
     if (forwarder != null) {
       return new ForwarderExecutor(socket, forwarderAddress);
     }
-
     return new LocalExecutor(serverSocket);
   }
 

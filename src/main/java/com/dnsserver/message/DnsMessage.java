@@ -6,25 +6,25 @@ import java.util.List;
 
 public record DnsMessage(Header header, List<Question> questions, List<Answer> answers) {
 
-  public static DnsMessage From(byte[] data) {
+  public static DnsMessage from(byte[] data) {
 
     var buff = ByteBuffer.wrap(data);
-    Header header = Header.Parse(buff);
+    Header header = Header.parse(buff);
     List<Question> questions = new ArrayList<>();
     List<Answer> answers = new ArrayList<>();
 
     for (int i = 0; i < header.questionCount(); i++) {
-      questions.add(Question.Parse(buff));
+      questions.add(Question.parse(buff));
     }
 
     for (int i = 0; i < header.answerRecordCount(); i++) {
-      answers.add(Answer.Parse(buff));
+      answers.add(Answer.parse(buff));
     }
 
     return new DnsMessage(header, questions, answers);
   }
 
-  public byte[] Decode() {
+  public byte[] decode() {
     var buff = ByteBuffer.allocate(512);
 
     var responseHeader  = new Header(
@@ -36,22 +36,21 @@ public record DnsMessage(Header header, List<Question> questions, List<Answer> a
         header.recursionDesired(),
         header.recursionAvailable(),
         header.reserved(),
-        (byte) header.responseCode(),
+        header.responseCode(),
         (short)questions.size(),
         (short) questions.size(),
         header.authorityRecordCount(),
         header.additionalRecordCount()
     );
 
-
-    responseHeader.Encode(buff);
+    responseHeader.encode(buff);
 
     for (Question question : questions) {
-      question.Encode(buff);
+      question.encode(buff);
     }
 
     for (Answer answer : answers) {
-      answer.Encode(buff);
+      answer.encode(buff);
     }
 
     return buff.array();

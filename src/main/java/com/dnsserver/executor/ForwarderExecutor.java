@@ -8,8 +8,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,21 +15,20 @@ import java.util.Objects;
 
 public class ForwarderExecutor implements RequestExecutor {
 
-  private final int BUFFER_SIZE = 512;
+  private static final int BUFFER_SIZE = 512;
 
   private final DatagramSocket socket;
   private final SocketAddress remoteAddress;
 
-  public ForwarderExecutor(DatagramSocket socket, String forwardAddress)
-      throws UnknownHostException, SocketException {
+  public ForwarderExecutor(DatagramSocket socket, String forwardAddress) {
     this.socket = Objects.requireNonNull(socket);
-    remoteAddress = GetSocketAddress(forwardAddress);
+    remoteAddress = getSocketAddress(forwardAddress);
   }
 
   @Override
-  public void Send(byte[] data, SocketAddress address) throws IOException {
+  public void send(byte[] data, SocketAddress address) throws IOException {
 
-    var message = DnsMessage.From(data);
+    var message = DnsMessage.from(data);
 
     List<Answer> answers = new ArrayList<>();
 
@@ -40,8 +37,8 @@ public class ForwarderExecutor implements RequestExecutor {
 
     for (var question : message.questions()) {
       var singleBuff = ByteBuffer.allocate(BUFFER_SIZE);
-      message.header().Encode(singleBuff);
-      question.Encode(singleBuff);
+      message.header().encode(singleBuff);
+      question.encode(singleBuff);
 
       // Send to remote server
       var rBytes = singleBuff.array();
@@ -56,25 +53,23 @@ public class ForwarderExecutor implements RequestExecutor {
 
       socket.receive(respPacket);
 
-      for(var answer : DnsMessage.From(rBytes).answers()) {
-        answers.add(answer);
-      }
+      answers.addAll(DnsMessage.from(rBytes).answers());
     }
 
    // Send response to local client
 
     var rBuff = new DnsMessage(
-        ResponseHeader(message),
+        responseHeader(message),
         message.questions(),
         answers
-    ).Decode();
+    ).decode();
 
     var localPacket = new DatagramPacket(rBuff, rBuff.length, address);
     socket.send(localPacket);
   }
 
 
-  private SocketAddress GetSocketAddress(String address) {
+  private SocketAddress getSocketAddress(String address) {
     var parts = address.split(":");
     if (parts.length != 2) {
       throw new IllegalArgumentException("Invalid address");
@@ -83,7 +78,7 @@ public class ForwarderExecutor implements RequestExecutor {
     return new InetSocketAddress(parts[0], Integer.parseInt(parts[1]));
   }
 
-  private Header ResponseHeader(DnsMessage message) {
+  private Header responseHeader(DnsMessage message) {
     var requestHeader = message.header();
     return new Header(
         requestHeader.packetIdentifier(),
@@ -94,7 +89,7 @@ public class ForwarderExecutor implements RequestExecutor {
         requestHeader.recursionDesired(),
         requestHeader.recursionAvailable(),
         requestHeader.reserved(),
-        (byte) requestHeader.responseCode(),
+        requestHeader.responseCode(),
         (short) message.questions().size(),
         (short)message.questions().size(),
         requestHeader.authorityRecordCount(),

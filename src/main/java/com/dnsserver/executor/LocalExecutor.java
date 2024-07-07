@@ -16,9 +16,9 @@ public class LocalExecutor implements RequestExecutor {
   }
 
   @Override
-  public void Send(byte[] data, SocketAddress address) throws IOException {
-    var message = DnsMessage.From(data);
-    var bytes = message.Decode();
+  public void send(byte[] data, SocketAddress address) throws IOException {
+    var message = DnsMessage.from(data);
+    var bytes = message.decode();
     var packet = new DatagramPacket(bytes, bytes.length, address);
 
     socket.send(packet);

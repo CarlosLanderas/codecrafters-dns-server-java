@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 public class HeaderTest {
 
   @Test
-  void Parse() {
+  void parse() {
 
     var buff = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
     buff.putShort((short)1234);
@@ -20,7 +20,7 @@ public class HeaderTest {
     buff.putShort((short) 0);
     buff.putShort((short) 0);
 
-    var header = Header.Parse(ByteBuffer.wrap(buff.array()));
+    var header = Header.parse(ByteBuffer.wrap(buff.array()));
 
     assertEquals(1234, header.packetIdentifier());
     assertEquals(true, header.queryResponseIndicator());
@@ -38,7 +38,7 @@ public class HeaderTest {
   }
 
   @Test
-  void ParseOpCode() {
+  void parseOpCode() {
     var buff = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
     buff.putShort((short)1234);
     buff.put((byte) 0b10111001); // OpCode 7
@@ -48,7 +48,7 @@ public class HeaderTest {
     buff.putShort((short) 0);
     buff.putShort((short) 0);
 
-    var header = Header.Parse(ByteBuffer.wrap(buff.array()));
+    var header = Header.parse(ByteBuffer.wrap(buff.array()));
 
     assertEquals(7, header.operationCode());
     assertEquals(4, header.responseCode());
@@ -56,7 +56,7 @@ public class HeaderTest {
   }
 
   @Test
-  void Encode() {
+  void encode() {
     var header = new Header(
         (short) 1234,
         true,
@@ -75,7 +75,7 @@ public class HeaderTest {
 
     var buff = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
 
-    header.Encode(buff);
+    header.encode(buff);
 
     buff = buff.rewind();
 
