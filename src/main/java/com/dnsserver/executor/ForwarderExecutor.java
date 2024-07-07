@@ -56,16 +56,20 @@ public class ForwarderExecutor implements RequestExecutor {
 
       socket.receive(respPacket);
 
-      answers.add(DnsMessage.From(rBytes).answer());
+      for(var answer : DnsMessage.From(rBytes).answers()) {
+        answers.add(answer);
+      }
     }
 
-   // Send response local client
-    var rBuff = ByteBuffer.allocate(BUFFER_SIZE);
-    ResponseHeader(message).Encode(rBuff);
-    message.questions().forEach(q -> q.Encode(rBuff));
-    answers.forEach(a -> a.Encode(rBuff));
+   // Send response to local client
 
-    var localPacket = new DatagramPacket(rBuff.array(), rBuff.array().length, address);
+    var rBuff = new DnsMessage(
+        ResponseHeader(message),
+        message.questions(),
+        answers
+    ).Decode();
+
+    var localPacket = new DatagramPacket(rBuff, rBuff.length, address);
     socket.send(localPacket);
   }
 

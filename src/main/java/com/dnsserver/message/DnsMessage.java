@@ -4,24 +4,27 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public record DnsMessage(Header header, List<Question> questions, Answer answer) {
+public record DnsMessage(Header header, List<Question> questions, List<Answer> answers) {
 
   public static DnsMessage From(byte[] data) {
 
     var buff = ByteBuffer.wrap(data);
     Header header = Header.Parse(buff);
     List<Question> questions = new ArrayList<>();
+    List<Answer> answers = new ArrayList<>();
 
     for (int i = 0; i < header.questionCount(); i++) {
       questions.add(Question.Parse(buff));
     }
 
-    Answer answer = Answer.Parse(buff);
+    for (int i = 0; i < header.answerRecordCount(); i++) {
+      answers.add(Answer.Parse(buff));
+    }
 
-    return new DnsMessage(header, questions, answer);
+    return new DnsMessage(header, questions, answers);
   }
 
-  public byte[] Write() {
+  public byte[] Decode() {
     var buff = ByteBuffer.allocate(512);
 
     var responseHeader  = new Header(
@@ -47,15 +50,8 @@ public record DnsMessage(Header header, List<Question> questions, Answer answer)
       question.Encode(buff);
     }
 
-    for (Question question : questions) {
-      new Answer(
-          question.domain(),
-          (short)1,
-          (short)1,
-          60,
-          (short)4,
-          new byte[]{8, 8, 8, 8}
-      ).Encode(buff);
+    for (Answer answer : answers) {
+      answer.Encode(buff);
     }
 
     return buff.array();
