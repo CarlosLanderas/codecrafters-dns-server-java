@@ -1,8 +1,6 @@
 package com.dnsserver.message;
 
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public record Header(
 
@@ -70,6 +68,7 @@ public record Header(
         additionalRecordCount
     );
   }
+
 
   public void Encode(ByteBuffer buffer) {
     // Assuming these fields are class members or parameters passed to the constructor
